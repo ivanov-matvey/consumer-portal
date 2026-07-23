@@ -1,4 +1,5 @@
 using ConsumerPortal.Api.Domain.Entities;
+using ConsumerPortal.Api.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -34,5 +35,14 @@ public class CompanyConfiguration : IEntityTypeConfiguration<Company>
 
         builder.HasIndex(company => company.Inn)
             .IsUnique();
+
+        builder.HasData(
+            new Company { Id = Guid.Parse("10000000-0000-0000-0000-000000000001"), Name = "Городская управляющая компания", Inn = "7701234567", Category = CompanyCategory.HousingUtilities },
+            new Company { Id = Guid.Parse("10000000-0000-0000-0000-000000000002"), Name = "Комфортный дом", Inn = "7812345678", Category = CompanyCategory.HousingUtilities },
+            new Company { Id = Guid.Parse("10000000-0000-0000-0000-000000000003"), Name = "Магазин У дома", Inn = "770123456789", Category = CompanyCategory.Retail },
+            new Company { Id = Guid.Parse("10000000-0000-0000-0000-000000000004"), Name = "Торговая сеть Север", Inn = "780123456789", Category = CompanyCategory.Retail },
+            new Company { Id = Guid.Parse("10000000-0000-0000-0000-000000000005"), Name = "Быстрая связь", Inn = "7712345678", Category = CompanyCategory.Telecom },
+            new Company { Id = Guid.Parse("10000000-0000-0000-0000-000000000006"), Name = "Телеком Регион", Inn = "781234567890", Category = CompanyCategory.Telecom }
+        );
     }
 }

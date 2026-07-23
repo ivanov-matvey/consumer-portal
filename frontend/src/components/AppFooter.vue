@@ -7,7 +7,6 @@
 <script>
 export default {
   name: "AppFooter",
-
   computed: {
     currentYear() {
       return new Date().getFullYear();
@@ -18,15 +17,13 @@ export default {
 
 <style scoped>
 .footer {
-  background: #111827;
-  color: #d1d5db;
+  background: var(--color-footer);
+  color: var(--color-on-dark-muted);
 }
-
 .footer__container {
   width: min(1200px, calc(100% - 32px));
   min-height: 64px;
   margin: 0 auto;
-
   display: flex;
   align-items: center;
   justify-content: center;
