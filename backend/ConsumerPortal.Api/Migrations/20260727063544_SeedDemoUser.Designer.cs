@@ -4,6 +4,7 @@ using ConsumerPortal.Api.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,10 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ConsumerPortal.Api.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260727063544_SeedDemoUser")]
+    partial class SeedDemoUser
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -81,7 +83,7 @@ namespace ConsumerPortal.Api.Migrations
 
                     b.ToTable("Companies", (string)null);
 
-                    b.HasCheckConstraint("CK_Companies_Inn_Lenght", "LEN([Inn]) IN (10, 12) AND [Inn] NOT LIKE '%[^0-9]%'");
+                    b.HasCheckConstraint("CK_Companies_Inn_Lenght", "LEN([Inn]) IN (10, 12)");
 
                     b.HasData(
                         new

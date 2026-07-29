@@ -26,7 +26,7 @@ public class CompanyConfiguration : IEntityTypeConfiguration<Company>
 
         builder.HasCheckConstraint(
             "CK_Companies_Inn_Lenght",
-            "LEN([Inn]) IN (10, 12)"
+            "LEN([Inn]) IN (10, 12) AND [Inn] NOT LIKE '%[^0-9]%'"
         );
 
         builder.Property(company => company.Category)

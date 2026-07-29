@@ -1,9 +1,11 @@
 <template>
-  <article class="company-card">
-    <span class="company-card__category">{{ categoryLabel }}</span>
-    <h2 class="company-card__name">{{ company.name }}</h2>
-    <p class="company-card__inn">ИНН: {{ company.inn }}</p>
-  </article>
+  <router-link class="company-card" :to="`/company/${company.id}`">
+    <article>
+      <span class="company-card__category">{{ categoryLabel }}</span>
+      <h2 class="company-card__name">{{ company.name }}</h2>
+      <p class="company-card__inn">ИНН: {{ company.inn }}</p>
+    </article>
+  </router-link>
 </template>
 
 <script>
@@ -28,6 +30,13 @@ export default {
   border-radius: 12px;
   background: var(--color-surface);
   box-shadow: var(--shadow-card);
+  color: inherit;
+  text-decoration: none;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.company-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(31, 41, 55, 0.12);
 }
 .company-card__category {
   display: inline-block;

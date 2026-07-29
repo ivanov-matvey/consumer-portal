@@ -37,5 +37,17 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
             .WithMany(role => role.Users)
             .HasForeignKey(user => user.RoleId)
             .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasData(
+            new User
+            {
+                Id = Guid.Parse("20000000-0000-0000-0000-000000000001"),
+                FullName = "Демонстрационный пользователь",
+                Email = "demo@consumer-portal.local",
+                PasswordHash = "NOT_USED_UNTIL_WEEK4",
+                CreatedAt = new DateTimeOffset(2026, 7, 27, 0, 0, 0, TimeSpan.Zero),
+                RoleId = 1
+            }
+        );
     }
 }

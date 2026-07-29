@@ -1,3 +1,4 @@
+using ConsumerPortal.Api.Contracts.Claims;
 using ConsumerPortal.Api.Contracts.Companies;
 using ConsumerPortal.Api.Infrastructure.Data;
 using Microsoft.AspNetCore.Mvc;
@@ -32,18 +33,30 @@ public class CompaniesController : ControllerBase
     }
 
     [HttpGet("{id:guid}")]
-    [ProducesResponseType(typeof(CompanyDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(CompanyDetailsDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<CompanyDto>> GetById(Guid id, CancellationToken cancellationToken)
+    public async Task<ActionResult<CompanyDetailsDto>> GetById(Guid id, CancellationToken cancellationToken)
     {
         var company = await _dbContext.Companies
             .AsNoTracking()
             .Where(company => company.Id == id)
-            .Select(company => new CompanyDto(
+            .Select(company => new CompanyDetailsDto(
                 company.Id,
                 company.Name,
                 company.Inn,
-                (int)company.Category
+                (int)company.Category,
+                company.Claims
+                    .OrderByDescending(claim => claim.CreatedAt)
+                    .Select(claim => new ClaimDto(
+                        claim.Id,
+                        claim.Title,
+                        claim.Text,
+                        (int)claim.Status,
+                        claim.CreatedAt,
+                        claim.CompanyId,
+                        claim.UserId
+                    ))
+                    .ToList()
             ))
             .SingleOrDefaultAsync(cancellationToken);
 

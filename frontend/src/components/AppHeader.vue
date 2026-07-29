@@ -7,8 +7,6 @@
         <router-link class="header__link" to="/claim/new">
           Подать жалобу
         </router-link>
-        <router-link class="header__link" to="/profile">Профиль</router-link>
-        <router-link class="header__link" to="/login">Войти</router-link>
       </nav>
     </div>
   </header>
