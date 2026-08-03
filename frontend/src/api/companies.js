@@ -1,11 +1,11 @@
-import axios from "axios";
+import http from "./http";
 
 export async function getCompanies() {
-  const response = await axios.get("/api/companies");
+  const response = await http.get("/api/companies");
   return response.data;
 }
 
 export async function getCompany(id) {
-  const response = await axios.get(`/api/companies/${id}`);
+  const response = await http.get(`/api/companies/${id}`);
   return response.data;
 }

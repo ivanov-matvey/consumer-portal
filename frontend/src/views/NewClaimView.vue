@@ -62,8 +62,6 @@
 import { getCompanies } from "../api/companies";
 import { createClaim } from "../api/claims";
 
-const DEMO_USER_ID = "20000000-0000-0000-0000-000000000001";
-
 export default {
   name: "NewClaimView",
   data: () => ({
@@ -100,7 +98,6 @@ export default {
         const claim = await createClaim({
           ...this.form,
           inn: company?.inn || "",
-          userId: DEMO_USER_ID,
         });
         await this.$router.push(`/company/${claim.companyId}`);
       } catch (error) {

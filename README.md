@@ -15,7 +15,7 @@
 
 ### Backend
 
-```powershell
+```bash
 cd C:\consumer-portal\backend\ConsumerPortal.Api
 dotnet run
 ```
@@ -24,7 +24,7 @@ Swagger: <https://localhost:7079/swagger>
 
 ### Frontend
 
-```powershell
+```bash
 cd C:\consumer-portal\frontend
 npm run serve
 ```

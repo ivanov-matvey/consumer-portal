@@ -44,7 +44,7 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
                 Id = Guid.Parse("20000000-0000-0000-0000-000000000001"),
                 FullName = "Демонстрационный пользователь",
                 Email = "demo@consumer-portal.local",
-                PasswordHash = "NOT_USED_UNTIL_WEEK4",
+                PasswordHash = "$2a$11$L6TImdFX/hcvxpnKj2DcW.AsjTQKaOdFtHGQh8DPx7Db/.jWur8LW",
                 CreatedAt = new DateTimeOffset(2026, 7, 27, 0, 0, 0, TimeSpan.Zero),
                 RoleId = 1
             }

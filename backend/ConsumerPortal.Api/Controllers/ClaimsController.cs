@@ -2,13 +2,17 @@ using ConsumerPortal.Api.Contracts.Claims;
 using ConsumerPortal.Api.Domain.Entities;
 using ConsumerPortal.Api.Domain.Enums;
 using ConsumerPortal.Api.Infrastructure.Data;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
+using ClaimEntity = ConsumerPortal.Api.Domain.Entities.Claim;
 
 namespace ConsumerPortal.Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
+[Authorize]
 public class ClaimsController : ControllerBase
 {
     private readonly ApplicationDbContext _dbContext;
@@ -23,6 +27,12 @@ public class ClaimsController : ControllerBase
         CancellationToken cancellationToken
     )
     {
+        var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (!Guid.TryParse(userIdClaim, out var userId))
+        {
+            return Unauthorized();
+        }
+
         var company = await _dbContext.Companies
             .AsNoTracking()
             .SingleOrDefaultAsync(company => company.Id == request.CompanyId, cancellationToken);
@@ -36,17 +46,12 @@ public class ClaimsController : ControllerBase
             ModelState.AddModelError(nameof(request.Inn), "ИНН не соответствует выбранной организации.");
         }
 
-        if (!await _dbContext.Users.AnyAsync(user => user.Id == request.UserId, cancellationToken))
-        {
-            ModelState.AddModelError(nameof(request.UserId), "Пользователь не найден.");
-        }
-
         if (!ModelState.IsValid)
         {
             return ValidationProblem(ModelState);
         }
 
-        var claim = new Claim
+        var claim = new ClaimEntity
         {
             Id = Guid.NewGuid(),
             Title = request.Title.Trim(),
@@ -54,7 +59,7 @@ public class ClaimsController : ControllerBase
             Status = ClaimStatus.New,
             CreatedAt = DateTimeOffset.UtcNow,
             CompanyId = request.CompanyId,
-            UserId = request.UserId
+            UserId = userId
         };
 
         _dbContext.Claims.Add(claim);
