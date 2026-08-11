@@ -47,6 +47,15 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
                 PasswordHash = "$2a$11$L6TImdFX/hcvxpnKj2DcW.AsjTQKaOdFtHGQh8DPx7Db/.jWur8LW",
                 CreatedAt = new DateTimeOffset(2026, 7, 27, 0, 0, 0, TimeSpan.Zero),
                 RoleId = 1
+            },
+            new User
+            {
+                Id = Guid.Parse("20000000-0000-0000-0000-000000000002"),
+                FullName = "Демонстрационный модератор",
+                Email = "moderator@consumer-portal.local",
+                PasswordHash = "$2a$11$9wdMc/10SfSqXv.HQ8vYN.av0mwDgluA8uQ82Jg7pSlFZBb9NGvFW",
+                CreatedAt = new DateTimeOffset(2026, 8, 11, 0, 0, 0, TimeSpan.Zero),
+                RoleId = 2
             }
         );
     }

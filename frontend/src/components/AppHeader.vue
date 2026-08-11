@@ -8,6 +8,16 @@
           Подать жалобу
         </router-link>
         <template v-if="isAuthenticated">
+          <router-link class="header__link" to="/profile">
+            Мои жалобы
+          </router-link>
+          <router-link
+            v-if="userRole === 'Moderator'"
+            class="header__link"
+            to="/admin/dashboard"
+          >
+            Модерация
+          </router-link>
           <span class="header__user">{{ user.fullName }}</span>
           <button class="header__logout" type="button" @click="logout">
             Выйти
@@ -33,6 +43,9 @@ export default {
     },
     user() {
       return this.$store.state.user;
+    },
+    userRole() {
+      return this.$store.getters.userRole;
     },
   },
   methods: {

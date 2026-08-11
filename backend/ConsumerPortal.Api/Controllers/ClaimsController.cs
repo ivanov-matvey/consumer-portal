@@ -19,6 +19,63 @@ public class ClaimsController : ControllerBase
 
     public ClaimsController(ApplicationDbContext dbContext) => _dbContext = dbContext;
 
+    [HttpGet("my")]
+    [ProducesResponseType(typeof(IReadOnlyCollection<UserClaimDto>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<IReadOnlyCollection<UserClaimDto>>> GetMy(
+        CancellationToken cancellationToken
+    )
+    {
+        if (!TryGetUserId(out var userId))
+        {
+            return Unauthorized();
+        }
+
+        var claims = await _dbContext.Claims
+            .AsNoTracking()
+            .Where(claim => claim.UserId == userId)
+            .OrderByDescending(claim => claim.CreatedAt)
+            .Select(claim => new UserClaimDto(
+                claim.Id,
+                claim.Title,
+                claim.Text,
+                (int)claim.Status,
+                claim.CreatedAt,
+                claim.CompanyId,
+                claim.Company.Name
+            ))
+            .ToListAsync(cancellationToken);
+
+        return Ok(claims);
+    }
+
+    [HttpGet]
+    [Authorize(Roles = "Moderator")]
+    [ProducesResponseType(typeof(IReadOnlyCollection<ModerationClaimDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<ActionResult<IReadOnlyCollection<ModerationClaimDto>>> GetAll(
+        CancellationToken cancellationToken
+    )
+    {
+        var claims = await _dbContext.Claims
+            .AsNoTracking()
+            .OrderByDescending(claim => claim.CreatedAt)
+            .Select(claim => new ModerationClaimDto(
+                claim.Id,
+                claim.Title,
+                claim.Text,
+                (int)claim.Status,
+                claim.CreatedAt,
+                claim.CompanyId,
+                claim.Company.Name,
+                claim.UserId,
+                claim.User.FullName,
+                claim.User.Email
+            ))
+            .ToListAsync(cancellationToken);
+
+        return Ok(claims);
+    }
+
     [HttpPost]
     [ProducesResponseType(typeof(ClaimDto), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -27,8 +84,7 @@ public class ClaimsController : ControllerBase
         CancellationToken cancellationToken
     )
     {
-        var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        if (!Guid.TryParse(userIdClaim, out var userId))
+        if (!TryGetUserId(out var userId))
         {
             return Unauthorized();
         }
@@ -76,5 +132,45 @@ public class ClaimsController : ControllerBase
         );
 
         return Created($"/api/claims/{claim.Id}", response);
+    }
+
+    [HttpPatch("{id:guid}/status")]
+    [Authorize(Roles = "Moderator")]
+    [ProducesResponseType(typeof(ClaimDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<ClaimDto>> UpdateStatus(
+        Guid id,
+        UpdateClaimStatusRequest request,
+        CancellationToken cancellationToken
+    )
+    {
+        var claim = await _dbContext.Claims
+            .SingleOrDefaultAsync(item => item.Id == id, cancellationToken);
+
+        if (claim is null)
+        {
+            return NotFound();
+        }
+
+        claim.Status = (ClaimStatus)request.Status;
+        await _dbContext.SaveChangesAsync(cancellationToken);
+
+        return Ok(new ClaimDto(
+            claim.Id,
+            claim.Title,
+            claim.Text,
+            (int)claim.Status,
+            claim.CreatedAt,
+            claim.CompanyId,
+            claim.UserId
+        ));
+    }
+
+    private bool TryGetUserId(out Guid userId)
+    {
+        var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        return Guid.TryParse(userIdClaim, out userId);
     }
 }

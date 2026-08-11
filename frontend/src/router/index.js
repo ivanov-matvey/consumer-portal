@@ -5,6 +5,8 @@ import CompanyView from "../views/CompanyView.vue";
 import NewClaimView from "../views/NewClaimView.vue";
 import LoginView from "../views/LoginView.vue";
 import RegisterView from "../views/RegisterView.vue";
+import ProfileView from "../views/ProfileView.vue";
+import AdminDashboardView from "../views/AdminDashboardView.vue";
 import store from "../store";
 
 Vue.use(VueRouter);
@@ -39,6 +41,18 @@ const routes = [
     component: RegisterView,
     meta: { requiresGuest: true },
   },
+  {
+    path: "/profile",
+    name: "profile",
+    component: ProfileView,
+    meta: { requiresAuth: true },
+  },
+  {
+    path: "/admin/dashboard",
+    name: "admin-dashboard",
+    component: AdminDashboardView,
+    meta: { requiresAuth: true, requiredRole: "Moderator" },
+  },
 ];
 
 const router = new VueRouter({
@@ -60,6 +74,14 @@ router.beforeEach((to, from, next) => {
     to.matched.some((route) => route.meta.requiresGuest) &&
     store.getters.isAuthenticated
   ) {
+    next({ name: "home" });
+    return;
+  }
+
+  const requiredRole = to.matched
+    .map((route) => route.meta.requiredRole)
+    .find(Boolean);
+  if (requiredRole && store.getters.userRole !== requiredRole) {
     next({ name: "home" });
     return;
   }
