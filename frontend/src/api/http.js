@@ -10,4 +10,30 @@ http.interceptors.request.use((config) => {
   return config;
 });
 
+http.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    const status = error.response?.status;
+
+    if (status === 401) {
+      localStorage.removeItem("consumerPortal.accessToken");
+      localStorage.removeItem("consumerPortal.user");
+
+      if (window.location.pathname !== "/login") {
+        window.location.assign("/login");
+      }
+    }
+
+    if (status === 500) {
+      window.dispatchEvent(
+        new CustomEvent("consumer-portal-server-error", {
+          detail: "Server error. Please try again later.",
+        })
+      );
+    }
+
+    return Promise.reject(error);
+  }
+);
+
 export default http;

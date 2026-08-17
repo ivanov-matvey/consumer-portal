@@ -19,12 +19,12 @@
       </header>
 
       <h2 class="claims-title">Жалобы на организацию</h2>
-      <p v-if="company.claims.length === 0" class="state-card">
+      <p v-if="company.claims.items.length === 0" class="state-card">
         На эту организацию пока нет жалоб.
       </p>
       <div v-else class="claims-list">
         <article
-          v-for="claim in company.claims"
+          v-for="claim in company.claims.items"
           :key="claim.id"
           class="claim-card"
         >
@@ -38,12 +38,19 @@
           }}</time>
         </article>
       </div>
+      <PaginationControls
+        v-if="company.claims.totalPages > 1"
+        :page="company.claims.page"
+        :total-pages="company.claims.totalPages"
+        @change="loadCompany"
+      />
     </template>
   </section>
 </template>
 
 <script>
 import { getCompany } from "../api/companies";
+import PaginationControls from "../components/PaginationControls.vue";
 
 const CATEGORY_LABELS = { 1: "ЖКХ", 2: "Ритейл", 3: "Связь" };
 const STATUS_LABELS = {
@@ -55,6 +62,7 @@ const STATUS_LABELS = {
 
 export default {
   name: "CompanyView",
+  components: { PaginationControls },
   props: { id: { type: String, required: true } },
   data: () => ({ company: null, loading: false, error: "" }),
   computed: {
@@ -69,10 +77,10 @@ export default {
     this.loadCompany();
   },
   methods: {
-    async loadCompany() {
+    async loadCompany(page = this.company?.claims.page || 1) {
       this.loading = true;
       try {
-        this.company = await getCompany(this.id);
+        this.company = await getCompany(this.id, { page, pageSize: 3 });
       } catch (error) {
         this.error =
           error.response?.status === 404

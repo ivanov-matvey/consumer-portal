@@ -5,13 +5,13 @@ export async function createClaim(payload) {
   return response.data;
 }
 
-export async function getMyClaims() {
-  const response = await http.get("/api/claims/my");
+export async function getMyClaims(params) {
+  const response = await http.get("/api/claims/my", { params });
   return response.data;
 }
 
-export async function getClaims() {
-  const response = await http.get("/api/claims");
+export async function getClaims(params) {
+  const response = await http.get("/api/claims", { params });
   return response.data;
 }
 

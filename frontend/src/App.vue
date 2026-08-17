@@ -2,6 +2,10 @@
   <div id="app" class="app">
     <AppHeader />
 
+    <p v-if="serverError" class="app__server-error" role="alert">
+      {{ serverError }}
+    </p>
+
     <main class="app__main">
       <div class="app__container">
         <router-view />
@@ -23,6 +27,24 @@ export default {
     AppHeader,
     AppFooter,
   },
+  data: () => ({ serverError: "" }),
+  created() {
+    window.addEventListener(
+      "consumer-portal-server-error",
+      this.showServerError
+    );
+  },
+  beforeDestroy() {
+    window.removeEventListener(
+      "consumer-portal-server-error",
+      this.showServerError
+    );
+  },
+  methods: {
+    showServerError(event) {
+      this.serverError = event.detail;
+    },
+  },
 };
 </script>
 
@@ -36,6 +58,16 @@ export default {
 
 .app__main {
   padding: 40px 0;
+}
+
+.app__server-error {
+  width: min(1200px, calc(100% - 32px));
+  margin: 16px auto 0;
+  padding: 12px 16px;
+  border: 1px solid var(--color-error-border);
+  border-radius: 8px;
+  background: var(--color-surface);
+  color: var(--color-error);
 }
 
 .app__container {

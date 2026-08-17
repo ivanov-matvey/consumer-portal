@@ -1,4 +1,5 @@
 using ConsumerPortal.Api.Contracts.Claims;
+using ConsumerPortal.Api.Contracts.Common;
 using ConsumerPortal.Api.Domain.Entities;
 using ConsumerPortal.Api.Domain.Enums;
 using ConsumerPortal.Api.Infrastructure.Data;
@@ -20,9 +21,13 @@ public class ClaimsController : ControllerBase
     public ClaimsController(ApplicationDbContext dbContext) => _dbContext = dbContext;
 
     [HttpGet("my")]
-    [ProducesResponseType(typeof(IReadOnlyCollection<UserClaimDto>), StatusCodes.Status200OK)]
-    public async Task<ActionResult<IReadOnlyCollection<UserClaimDto>>> GetMy(
-        CancellationToken cancellationToken
+    [ProducesResponseType(typeof(PagedResult<UserClaimDto>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<PagedResult<UserClaimDto>>> GetMy(
+        string? search,
+        int? status,
+        int page = 1,
+        int pageSize = 10,
+        CancellationToken cancellationToken = default
     )
     {
         if (!TryGetUserId(out var userId))
@@ -30,10 +35,34 @@ public class ClaimsController : ControllerBase
             return Unauthorized();
         }
 
-        var claims = await _dbContext.Claims
+        page = Math.Max(1, page);
+        pageSize = Math.Clamp(pageSize, 1, 100);
+
+        var query = _dbContext.Claims
             .AsNoTracking()
             .Where(claim => claim.UserId == userId)
+            .AsQueryable();
+
+        if (!string.IsNullOrWhiteSpace(search))
+        {
+            var searchTerm = search.Trim();
+            query = query.Where(claim =>
+                claim.Title.Contains(searchTerm)
+                || claim.Text.Contains(searchTerm)
+                || claim.Company.Name.Contains(searchTerm)
+            );
+        }
+
+        if (status.HasValue)
+        {
+            query = query.Where(claim => (int)claim.Status == status.Value);
+        }
+
+        var totalCount = await query.CountAsync(cancellationToken);
+        var claims = await query
             .OrderByDescending(claim => claim.CreatedAt)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
             .Select(claim => new UserClaimDto(
                 claim.Id,
                 claim.Title,
@@ -45,20 +74,50 @@ public class ClaimsController : ControllerBase
             ))
             .ToListAsync(cancellationToken);
 
-        return Ok(claims);
+        return Ok(new PagedResult<UserClaimDto>(claims, page, pageSize, totalCount));
     }
 
     [HttpGet]
     [Authorize(Roles = "Moderator")]
-    [ProducesResponseType(typeof(IReadOnlyCollection<ModerationClaimDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(PagedResult<ModerationClaimDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    public async Task<ActionResult<IReadOnlyCollection<ModerationClaimDto>>> GetAll(
-        CancellationToken cancellationToken
+    public async Task<ActionResult<PagedResult<ModerationClaimDto>>> GetAll(
+        string? search,
+        int? status,
+        int page = 1,
+        int pageSize = 10,
+        CancellationToken cancellationToken = default
     )
     {
-        var claims = await _dbContext.Claims
+        page = Math.Max(1, page);
+        pageSize = Math.Clamp(pageSize, 1, 100);
+
+        var query = _dbContext.Claims
             .AsNoTracking()
+            .AsQueryable();
+
+        if (!string.IsNullOrWhiteSpace(search))
+        {
+            var searchTerm = search.Trim();
+            query = query.Where(claim =>
+                claim.Title.Contains(searchTerm)
+                || claim.Text.Contains(searchTerm)
+                || claim.Company.Name.Contains(searchTerm)
+                || claim.User.FullName.Contains(searchTerm)
+                || claim.User.Email.Contains(searchTerm)
+            );
+        }
+
+        if (status.HasValue)
+        {
+            query = query.Where(claim => (int)claim.Status == status.Value);
+        }
+
+        var totalCount = await query.CountAsync(cancellationToken);
+        var claims = await query
             .OrderByDescending(claim => claim.CreatedAt)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
             .Select(claim => new ModerationClaimDto(
                 claim.Id,
                 claim.Title,
@@ -73,7 +132,7 @@ public class ClaimsController : ControllerBase
             ))
             .ToListAsync(cancellationToken);
 
-        return Ok(claims);
+        return Ok(new PagedResult<ModerationClaimDto>(claims, page, pageSize, totalCount));
     }
 
     [HttpPost]

@@ -31,11 +31,18 @@
         }}</time>
       </article>
     </div>
+    <PaginationControls
+      v-if="!loading && !error && pagination.totalPages > 1"
+      :page="pagination.page"
+      :total-pages="pagination.totalPages"
+      @change="loadClaims"
+    />
   </section>
 </template>
 
 <script>
 import { getMyClaims } from "../api/claims";
+import PaginationControls from "../components/PaginationControls.vue";
 
 const STATUS_LABELS = {
   1: "Новое",
@@ -46,16 +53,27 @@ const STATUS_LABELS = {
 
 export default {
   name: "ProfileView",
-  data: () => ({ claims: [], loading: false, error: "" }),
+  components: { PaginationControls },
+  data: () => ({
+    claims: [],
+    loading: false,
+    error: "",
+    pagination: { page: 1, pageSize: 3, totalCount: 0, totalPages: 1 },
+  }),
   created() {
     this.loadClaims();
   },
   methods: {
-    async loadClaims() {
+    async loadClaims(page = this.pagination.page) {
       this.loading = true;
       this.error = "";
       try {
-        this.claims = await getMyClaims();
+        const result = await getMyClaims({
+          page,
+          pageSize: this.pagination.pageSize,
+        });
+        this.claims = result.items;
+        this.pagination = result;
       } catch (error) {
         this.error = "Не удалось загрузить ваши жалобы.";
       } finally {

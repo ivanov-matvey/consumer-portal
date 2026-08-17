@@ -78,7 +78,8 @@ export default {
     async loadCompanies() {
       this.loadingCompanies = true;
       try {
-        this.companies = await getCompanies();
+        const result = await getCompanies({ page: 1, pageSize: 100 });
+        this.companies = result.items;
         if (this.$route.query.companyId) {
           this.form.companyId = this.$route.query.companyId;
         }

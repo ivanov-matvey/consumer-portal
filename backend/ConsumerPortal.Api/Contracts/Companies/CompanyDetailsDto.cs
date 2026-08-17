@@ -1,4 +1,5 @@
 using ConsumerPortal.Api.Contracts.Claims;
+using ConsumerPortal.Api.Contracts.Common;
 
 namespace ConsumerPortal.Api.Contracts.Companies;
 
@@ -7,5 +8,5 @@ public record CompanyDetailsDto(
     string Name,
     string Inn,
     int Category,
-    IReadOnlyCollection<ClaimDto> Claims
+    PagedResult<ClaimDto> Claims
 );
